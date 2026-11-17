@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MODO PRUEBA - Noviembre contigo ❤️</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #fdf6f6;
+            --card-unlocked: #ff758f;
+            --card-opened: rgba(255, 255, 255, 0.95);
+            --text-main: #4a3b3b;
+            --accent: #c9184a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fff0f3 0%, #fdf6f6 50%, #ffe5ec 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .preview-banner {
+            position: relative;
+            z-index: 2;
+            background: #2b2d42;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .preview-banner button {
+            background: #ff758f;
+            border: none;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: bold;
+        }
+
+        .bg-decorations {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-item {
+            position: absolute;
+            user-select: none;
+            opacity: 0.45;
+            animation: floatSlow 8s ease-in-out infinite;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));
+        }
+
+        .teddy-red {
+            filter: hue-rotate(-38deg) saturate(2.4) brightness(0.95) drop-shadow(0 2px 4px rgba(201, 24, 74, 0.15));
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+            50% { transform: translateY(-14px) rotate(calc(var(--rot, 0deg) + 6deg)); }
+        }
+
+        header, .status-panel, #loading, .grid {
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            max-width: 620px;
+            margin-bottom: 18px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(5px);
+            padding: 18px 34px;
+            border-radius: 22px;
+            box-shadow: 0 4px 15px rgba(201, 24, 74, 0.08);
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            color: var(--accent);
+            font-size: 2.8rem;
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .status-panel {
+            width: 100%;
+            max-width: 620px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(5px);
+            border-radius: 18px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(201, 24, 74, 0.07);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: #ffe5ec;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff758f, #c9184a);
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+
+        .countdown-box {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #5c4747;
+            background: #fff0f3;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        #loading {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin: 40px 0;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 780px;
+        }
+
+        .day-card {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.25s, box-shadow 0.25s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            user-select: none;
+            padding: 10px;
+            box-sizing: border-box;
+            text-align: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .day-card:hover { transform: translateY(-5px) scale(1.02); }
+
+        .wax-seal-mini {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 26px;
+            height: 26px;
+            background: radial-gradient(circle at 35% 35%, #e63946, #9e192d);
+            border: 2px solid #ffb3c1;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.72rem;
+            color: #fff0f3;
+            box-shadow: 0 3px 6px rgba(158, 25, 45, 0.35);
+            transform: rotate(12deg);
+        }
+
+        .day-number { font-weight: bold; font-size: 1.35rem; line-height: 1.2; }
+        .day-date { font-size: 0.85rem; margin-top: 3px; opacity: 0.85; font-weight: 500; }
+        .status-icon { font-size: 1.2rem; margin-top: 6px; }
+
+        .unlocked { background-color: var(--card-unlocked); color: white; animation: pulse 2s infinite; }
+        .opened { background-color: var(--card-opened); color: var(--accent); border: 2px solid var(--card-unlocked); }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 117, 143, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 117, 143, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 117, 143, 0); }
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .welcome-overlay {
+            z-index: 200;
+            background: rgba(45, 25, 32, 0.72);
+            backdrop-filter: blur(4px);
+        }
+
+        .envelope-wrapper { position: relative; max-width: 470px; width: 100%; perspective: 1000px; }
+
+        .modal-content {
+            position: relative;
+            background: #fffdfd;
+            padding: 32px 24px 26px 24px;
+            border-radius: 20px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            box-sizing: border-box;
+            border-top: 8px solid #ff758f;
+            animation: envelopeOpen 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            transform-origin: top center;
+        }
+
+        .wax-seal-modal {
+            width: 46px;
+            height: 46px;
+            margin: 0 auto 12px auto;
+            background: radial-gradient(circle at 32% 32%, #e63946, #800f2f);
+            border: 3px solid #ffccd5;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: #fff0f3;
+            box-shadow: 0 4px 10px rgba(128, 15, 47, 0.35), inset 0 0 6px rgba(0,0,0,0.25);
+            transform: rotate(-6deg);
+        }
+
+        @keyframes envelopeOpen {
+            0% { opacity: 0; transform: rotateX(-55deg) translateY(30px) scale(0.9); }
+            100% { opacity: 1; transform: rotateX(0deg) translateY(0) scale(1); }
+        }
+
+        .modal-date-badge {
+            display: inline-block;
+            background: #ffe5ec;
+            color: var(--accent);
+            padding: 4px 14px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .modal-title {
+            font-family: 'Dancing Script', cursive;
+            color: var(--accent);
+            font-size: 2.15rem;
+            margin-top: 0;
+            margin-bottom: 14px;
+        }
+
+        .polaroid-frame {
+            display: none;
+            background: white;
+            padding: 10px 10px 26px 10px;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.14);
+            margin: 12px auto 18px auto;
+            max-width: 260px;
+            transform: rotate(-2deg);
+        }
+
+        .modal-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 3px; display: block; }
+        .modal-body { font-size: 1.05rem; line-height: 1.6; margin: 14px 0 16px 0; white-space: pre-line; }
+
+        .game-box {
+            display: none;
+            background: #fff0f3;
+            border: 1.5px solid #ffccd5;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 14px auto;
+            box-sizing: border-box;
+        }
+
+        .game-feedback { margin-top: 10px; font-size: 0.92rem; font-weight: bold; color: var(--accent); text-align: center; }
+
+        .scratch-container {
+            position: relative;
+            width: 280px;
+            height: 110px;
+            margin: 0 auto;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            background: #ffffff;
+            border: 2px dashed #ff758f;
+            user-select: none;
+        }
+
+        .scratch-secret {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 1.05rem;
+            z-index: 1;
+        }
+
+        #scratch-canvas { position: absolute; top: 0; left: 0; z-index: 2; cursor: grab; touch-action: none; }
+
+        .quiz-question { font-weight: bold; color: var(--accent); margin: 0 0 12px 0; font-size: 1rem; text-align: center; }
+        .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+        .quiz-btn {
+            background: white;
+            border: 2px solid #ffb3c1;
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.94rem;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: left;
+        }
+        .quiz-btn:hover { background: #ffe5ec; }
+        .quiz-btn.correct { background: #d8f3dc; border-color: #2d6a4f; color: #1b4332; }
+        .quiz-btn.wrong { background: #ffccd5; border-color: #c9184a; color: #800f2f; }
+
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 280px; margin: 0 auto; }
+        .memory-card {
+            aspect-ratio: 1 / 1;
+            background: #ff758f;
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            user-select: none;
+        }
+        .memory-card.flipped, .memory-card.matched { background: white; border: 2px solid #ff758f; }
+
+        .wordle-board { display: flex; flex-direction: column; gap: 6px; align-items: center; margin-bottom: 10px; }
+        .wordle-row { display: flex; gap: 6px; }
+        .wordle-cell {
+            width: 38px; height: 38px;
+            border: 2px solid #ffb3c1;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+        .wordle-cell.correct { background: #52b788; border-color: #2d6a4f; color: white; }
+        .wordle-cell.present { background: #ffd166; border-color: #e09f3e; color: #4a3b3b; }
+        .wordle-cell.absent { background: #ced4da; border-color: #adb5bd; color: white; }
+        .wordle-input-row { display: flex; gap: 8px; justify-content: center; }
+        .wordle-input {
+            padding: 8px 12px;
+            border: 2px solid #ff758f;
+            border-radius: 10px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            width: 130px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .mini-action-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.92rem;
+        }
+
+        .wheel-wrapper { position: relative; width: 240px; height: 240px; margin: 0 auto 12px auto; }
+        .wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; z-index: 5; }
+        #wheel-canvas { border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.15); transition: transform 3.5s cubic-bezier(0.17, 0.67, 0.14, 0.99); }
+
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 84px);
+            grid-template-rows: repeat(3, 84px);
+            gap: 3px;
+            justify-content: center;
+            margin: 0 auto;
+            background: #ffb3c1;
+            padding: 4px;
+            border-radius: 10px;
+            width: fit-content;
+        }
+        .puzzle-tile { width: 84px; height: 84px; background-size: 252px 252px; border-radius: 6px; cursor: pointer; }
+        .puzzle-tile.empty { background: #ffe5ec !important; cursor: default; }
+
+        .reactions-section { margin-top: 14px; padding-top: 14px; border-top: 1px dashed #ffd6e0; width: 100%; }
+        .reactions-label { font-size: 0.9rem; color: #7a5c5c; margin-bottom: 10px; font-weight: 600; }
+        .reactions-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+        .reaction-chip {
+            background: #fff0f3;
+            border: 1.5px solid #ffb3c1;
+            color: #5c3d3d;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.88rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .reaction-chip.selected { background: #ff758f; border-color: #c9184a; color: white; }
+        .personal-note-prompt {
+            display: none;
+            margin-top: 12px;
+            background: #fff8f9;
+            border: 1px solid #ffd6e0;
+            color: #6d4c4c;
+            padding: 12px 14px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .wa-direct-btn {
+            display: inline-block;
+            margin-top: 10px;
+            background-color: #25d366;
+            color: white;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.88rem;
+            box-shadow: 0 3px 8px rgba(37, 211, 102, 0.25);
+        }
+
+        .finale-box {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            background: linear-gradient(135deg, #fff0f3, #ffe5ec);
+            border: 2px solid #ff758f;
+            border-radius: 16px;
+        }
+
+        .finale-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.65rem;
+            color: var(--accent);
+            margin: 0 0 6px 0;
+        }
+
+        .diploma-btn {
+            background: linear-gradient(90deg, #ff758f, #c9184a);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 22px;
+            font-weight: bold;
+            font-size: 0.92rem;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        .capsule-divider {
+            border: 0;
+            border-top: 1px dashed #ffb3c1;
+            margin: 14px 0;
+        }
+
+        .capsule-textarea {
+            width: 100%;
+            min-height: 75px;
+            border: 1.5px solid #ffb3c1;
+            border-radius: 12px;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            box-sizing: border-box;
+            resize: vertical;
+            margin-top: 6px;
+        }
+
+        .actions-group { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 14px; }
+        .song-btn {
+            display: none;
+            background-color: #1db954;
+            color: white;
+            text-decoration: none;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        .close-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="preview-banner">
+        <span>🛠️ VISTA PREVIA PRIVADA</span>
+        <button onclick="document.getElementById('welcome-modal').style.display='flex'">Ver carta bienvenida</button>
+        <button onclick="reiniciarPrueba()">Reiniciar tarjetas</button>
+    </div>
+
+    <div class="bg-decorations" id="bg-decorations"></div>
+
+    <div class="modal-overlay welcome-overlay" id="welcome-modal">
+        <div class="envelope-wrapper">
+            <div class="modal-content">
+                <div class="wax-seal-modal">💌</div>
+                <span class="modal-date-badge">Un regalo para ti</span>
+                <h2 class="modal-title">Antes de empezar...</h2>
+                <p class="modal-body" style="margin-bottom: 20px;">Preparé este pequeño rincón solo para ti. Desde hoy hasta fin de mes, cada día se irá abriendo un sobre nuevo con recuerdos, motivos por los que me encantas, vales y algunos juegos.
+
+Ábrelo a tu ritmo, cada día tiene su propia sorpresa ❤️🧸</p>
+                <button class="close-btn" onclick="cerrarBienvenida()">Abrir mi calendario ❤️</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <h1 id="main-title" title="Tócame 3 veces...">Para ti, día a día ❤️</h1>
+    </header>
+
+    <div class="status-panel" id="status-panel" style="display: none;">
+        <div class="progress-header">
+            <span id="progress-text">Sobres descubiertos: 0 de 16 ❤️</span>
+            <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="countdown-box" id="countdown-text">Modo prueba activo: todos los días y secretos disponibles ✨</div>
+    </div>
+
+    <div id="loading">Preparando tus sorpresas... ✨</div>
+    <div class="grid" id="calendar-grid"></div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="envelope-wrapper">
+            <div class="modal-content" id="modal-card">
+                <div class="wax-seal-modal" title="Sellado con amor">❤️</div>
+
+                <span class="modal-date-badge" id="modal-date">15 Nov</span>
+                <h2 class="modal-title" id="modal-title">Día 1</h2>
+
+                <div class="polaroid-frame" id="polaroid-frame">
+                    <img id="modal-img" class="modal-img" src="" alt="Recuerdo">
+                </div>
+
+                <div class="game-box" id="game-box"></div>
+
+                <p class="modal-body" id="modal-body">Mensaje del día</p>
+
+                <div class="finale-box" id="finale-box">
+                    <p class="finale-title">¡Completaste nuestro noviembre juntos! ✨</p>
+                    <p style="font-size:0.9rem;color:#6d4c4c;margin:0 0 8px 0;">Guarda este recuerdo de nuestro calendario en tu galería:</p>
+                    <button class="diploma-btn" onclick="descargarDiploma()">📜 Guardar certificado de noviembre</button>
+
+                    <hr class="capsule-divider">
+                    <p style="font-size:0.92rem;font-weight:bold;color:var(--accent);margin:0;">⏳ Cápsula del tiempo</p>
+                    <p style="font-size:0.86rem;color:#6d4c4c;margin:4px 0 6px 0;">Escribe aquí qué fue lo que más te gustó de este mes o un deseo para nosotros:</p>
+                    <textarea id="capsule-input" class="capsule-textarea" placeholder="Escribe lo que te salga del corazón..."></textarea>
+                    <button class="wa-direct-btn" style="border:none;cursor:pointer;" onclick="enviarCapsulaWhatsApp()">Mandarte mi cápsula por WhatsApp 💌</button>
+                </div>
+
+                <div class="actions-group">
+                    <a id="modal-song" class="song-btn" href="#" target="_blank" rel="noopener noreferrer">🎵 Escuchar la canción de hoy</a>
+
+                    <div class="reactions-section" id="reactions-section">
+                        <div class="reactions-label">¿Qué sentiste al leer esto? Elige una reacción:</div>
+                        <div class="reactions-row" id="reactions-row">
+                            <button class="reaction-chip" onclick="seleccionarReaccion(this, '🤗 Un abrazo gigante')">🤗 Un abrazo</button>
+                            <button class="reaction-chip" onclick="seleccionarReaccion(this, '😘 Un besito')">😘 Un besito</button>
+                            <button class="reaction-chip" onclick="seleccionarReaccion(this, '🥰 Me encantó')">🥰 Me encantó</button>
+                            <button class="reaction-chip" onclick="seleccionarReaccion(this, '🥺 Qué tierno')">🥺 Qué tierno</button>
+                            <button class="reaction-chip" onclick="seleccionarReaccion(this, '❤️ Te amo')">❤️ Te amo</button>
+                        </div>
+                        <div class="personal-note-prompt" id="personal-note-prompt"></div>
+                        <a id="wa-direct-btn" class="wa-direct-btn" href="#" target="_blank" rel="noopener noreferrer">Contarme qué me pareció 💬</a>
+                    </div>
+
+                    <button class="close-btn" onclick="closeModal()">Cerrar carta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TU_NUMERO_WHATSAPP = "56950425925";
+
+        function cerrarBienvenida() {
+            document.getElementById('welcome-modal').style.display = 'none';
+            lanzarCorazones();
+        }
+
+        let toquesTitulo = 0;
+        let timerToques = null;
+        document.getElementById('main-title').addEventListener('click', () => {
+            toquesTitulo++;
+            clearTimeout(timerToques);
+            timerToques = setTimeout(() => { toquesTitulo = 0; }, 1200);
+
+            if (toquesTitulo === 3) {
+                toquesTitulo = 0;
+                lanzarCorazones();
+                openModal({
+                    dia: "Secreto",
+                    fechaTexto: "Sorpresa oculta 🧸",
+                    titulo: "¡Encontraste el secreto! ✨",
+                    mensaje: "Por ser tan curiosa y tocar el título 3 veces, te ganaste un vale extra por un abrazo gigante y tu dulce favorito la próxima vez que nos veamos ❤️🍫",
+                    esBloqueado: true
+                });
+            }
+        });
+
+        function crearFondoDecorativo() {
+            const container = document.getElementById('bg-decorations');
+            const elementos = [
+                { icon: '❤️', isRedBear: false }, { icon: '💖', isRedBear: false },
+                { icon: '💜', isRedBear: false }, { icon: '💛', isRedBear: false },
+                { icon: '🩵', isRedBear: false }, { icon: '🩷', isRedBear: false },
+                { icon: '🌸', isRedBear: false }, { icon: '🌹', isRedBear: false },
+                { icon: '🌷', isRedBear: false }, { icon: '🌻', isRedBear: false },
+                { icon: '🌺', isRedBear: false }, { icon: '🧸', isRedBear: false },
+                { icon: '🧸', isRedBear: true }
+            ];
+
+            for (let i = 0; i < 34; i++) {
+                const span = document.createElement('span');
+                const elegido = elementos[i % elementos.length];
+                span.classList.add('bg-item');
+                if (elegido.isRedBear) span.classList.add('teddy-red');
+                span.innerText = elegido.icon;
+
+                const cols = 6, rows = 6;
+                const left = ((i % cols) * (100 / cols)) + (Math.random() * 10);
+                const top = (Math.floor(i / cols) * (100 / rows)) + (Math.random() * 10);
+                span.style.left = `${Math.min(left, 94)}%`;
+                span.style.top = `${Math.min(top, 94)}%`;
+                span.style.fontSize = `${1.4 + Math.random() * 1.2}rem`;
+                span.style.setProperty('--rot', `${-20 + Math.random() * 40}deg`);
+                span.style.animationDelay = `${Math.random() * 6}s`;
+                span.style.animationDuration = `${6 + Math.random() * 5}s`;
+                container.appendChild(span);
+            }
+        }
+        crearFondoDecorativo();
+
+        function lanzarCorazones() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 42,
+                    spread: 68,
+                    origin: { y: 0.6 },
+                    colors: ['#ff4d6d', '#ff758f', '#ffb3c1', '#c9184a', '#ffd166']
+                });
+            }
+        }
+
+        function lanzarGranFinal() {
+            if (typeof confetti !== 'function') return;
+            const fin = Date.now() + 3500;
+            (function frame() {
+                confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff4d6d', '#ff758f', '#c9184a', '#ffd166'] });
+                confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff4d6d', '#ff758f', '#c9184a', '#ffd166'] });
+                if (Date.now() < fin) requestAnimationFrame(frame);
+            }());
+        }
+
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsG2IWmrK5tRzGO50aWws8RWXaumMG9uXBKx7Wv5ZGe2wptft_XBeGQ6Ss3jc55iMQHrAgnXPod8Ox/pub?output=csv";
+
+        const grid = document.getElementById('calendar-grid');
+        const loadingEl = document.getElementById('loading');
+        let diasAbiertos = JSON.parse(localStorage.getItem('diasAbiertos_preview')) || [];
+        let reaccionesGuardadas = JSON.parse(localStorage.getItem('reacciones_preview')) || {};
+        let todasLasSorpresas = [];
+        let diaActualAbierto = null;
+
+        function reiniciarPrueba() {
+            diasAbiertos = [];
+            reaccionesGuardadas = {};
+            localStorage.removeItem('diasAbiertos_preview');
+            localStorage.removeItem('reacciones_preview');
+            renderCalendar(todasLasSorpresas);
+            actualizarProgreso(todasLasSorpresas);
+        }
+
+        function cargarDesdeGoogleSheets() {
+            Papa.parse(`${SHEET_CSV_URL}&t=${Date.now()}`, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    loadingEl.style.display = 'none';
+                    todasLasSorpresas = results.data.filter(item => item.dia && item.fecha);
+                    renderCalendar(todasLasSorpresas);
+                    actualizarProgreso(todasLasSorpresas);
+                },
+                error: function() {
+                    loadingEl.innerText = "Error al conectar con Google Sheets.";
+                }
+            });
+        }
+
+        function actualizarProgreso(sorpresas) {
+            const panel = document.getElementById('status-panel');
+            panel.style.display = 'flex';
+            const total = sorpresas.length;
+            const abiertos = sorpresas.filter(item => diasAbiertos.includes(String(item.dia))).length;
+            const porcentaje = total > 0 ? Math.min(100, Math.round((abiertos / total) * 100)) : 0;
+
+            document.getElementById('progress-text').innerText = `Sobres descubiertos: ${abiertos} de ${total} ❤️`;
+            document.getElementById('progress-percent').innerText = `${porcentaje}%`;
+            document.getElementById('progress-fill').style.width = `${porcentaje}%`;
+        }
+
+        function renderCalendar(sorpresas) {
+            grid.innerHTML = '';
+            sorpresas.forEach(item => {
+                const card = document.createElement('div');
+                card.classList.add('day-card');
+                const yaAbierto = diasAbiertos.includes(String(item.dia));
+                card.classList.add(yaAbierto ? 'opened' : 'unlocked');
+
+                const selloHtml = yaAbierto ? '<div class="wax-seal-mini" title="Carta abierta">❤️</div>' : '';
+
+                card.innerHTML = `
+                    ${selloHtml}
+                    <span class="day-number">Día ${item.dia}</span>
+                    <span class="day-date">${item.fechaTexto || item.fecha}</span>
+                    <span class="status-icon">${yaAbierto ? '💌' : '🎁'}</span>
+                `;
+
+                card.onclick = () => {
+                    const idDia = String(item.dia);
+                    if (!diasAbiertos.includes(idDia)) {
+                        diasAbiertos.push(idDia);
+                        localStorage.setItem('diasAbiertos_preview', JSON.stringify(diasAbiertos));
+                        renderCalendar(todasLasSorpresas);
+                        actualizarProgreso(todasLasSorpresas);
+                        if (idDia === '16') lanzarGranFinal();
+                        else lanzarCorazones();
+                    } else if (idDia === '16') {
+                        lanzarGranFinal();
+                    }
+                    openModal(item);
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        function revelarMensajeSecreto(textoSecreto) {
+            const bodyEl = document.getElementById('modal-body');
+            const textoFinal = (textoSecreto && textoSecreto.trim())
+                ? textoSecreto.trim()
+                : ((diaActualAbierto && diaActualAbierto.mensaje) || "");
+            bodyEl.style.opacity = '0';
+            bodyEl.innerText = textoFinal;
+            bodyEl.style.transition = 'opacity 0.6s ease';
+            setTimeout(() => { bodyEl.style.opacity = '1'; }, 50);
+        }
+
+        function openModal(item) {
+            diaActualAbierto = item;
+            const cardEl = document.getElementById('modal-card');
+            cardEl.style.animation = 'none';
+            cardEl.offsetHeight;
+            cardEl.style.animation = 'envelopeOpen 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards';
+
+            document.getElementById('modal-date').innerText = item.fechaTexto || item.fecha;
+            document.getElementById('modal-title').innerText = item.titulo || `Día ${item.dia}`;
+
+            const bodyEl = document.getElementById('modal-body');
+            const tipoJuego = item.juego_tipo ? item.juego_tipo.trim().toLowerCase() : "";
+
+            if (!item.esBloqueado && ['memorice', 'trivia', 'wordle', 'test'].includes(tipoJuego)) {
+                const avisos = {
+                    memorice: '🔒 Encuentra las 6 parejas de arriba para revelar tu dedicatoria de hoy...',
+                    trivia: '🔒 Responde correctamente la pregunta de arriba para desbloquear tu mensaje de hoy...',
+                    wordle: '🔒 Adivina la palabra secreta de arriba para desbloquear tu mensaje de hoy...',
+                    test: '🔒 Completa las preguntas de arriba para desbloquear tu mensaje de hoy...'
+                };
+                bodyEl.innerHTML = `<span style="color:#8c7272;font-style:italic;">${avisos[tipoJuego]}</span>`;
+            } else {
+                bodyEl.innerText = item.mensaje || "";
+            }
+
+            document.getElementById('finale-box').style.display = (!item.esBloqueado && String(item.dia) === '16') ? 'block' : 'none';
+
+            const reactionsSection = document.getElementById('reactions-section');
+            const promptEl = document.getElementById('personal-note-prompt');
+            const waBtn = document.getElementById('wa-direct-btn');
+            const chips = document.querySelectorAll('.reaction-chip');
+            chips.forEach(c => c.classList.remove('selected'));
+            promptEl.style.display = 'none';
+
+            if (item.esBloqueado) {
+                reactionsSection.style.display = 'none';
+            } else {
+                reactionsSection.style.display = 'block';
+                waBtn.href = `https://wa.me/${TU_NUMERO_WHATSAPP}`;
+                const reaccionPrevia = reaccionesGuardadas[String(item.dia)];
+                if (reaccionPrevia) {
+                    chips.forEach(c => {
+                        if (c.innerText.includes(reaccionPrevia.split(' ')[1])) c.classList.add('selected');
+                    });
+                    mostrarInvitacionPersonal(reaccionPrevia);
+                }
+            }
+
+            const polaroidEl = document.getElementById('polaroid-frame');
+            const imgEl = document.getElementById('modal-img');
+            const imagenUrl = item.imagen ? item.imagen.trim() : "";
+            imgEl.onerror = null;
+
+            if (imagenUrl && tipoJuego !== 'puzzle') {
+                imgEl.src = imagenUrl;
+                polaroidEl.style.display = 'block';
+                imgEl.onerror = () => polaroidEl.style.display = 'none';
+            } else {
+                imgEl.src = "";
+                polaroidEl.style.display = 'none';
+            }
+
+            const gameBox = document.getElementById('game-box');
+            gameBox.innerHTML = '';
+            gameBox.style.display = 'none';
+
+            if (!item.esBloqueado && tipoJuego) {
+                gameBox.style.display = 'block';
+                if (tipoJuego === 'raspa') montarRaspa(gameBox, item.juego_datos || "🎁 ¡Premio sorpresa!");
+                else if (tipoJuego === 'trivia') montarTrivia(gameBox, item.juego_datos, item.juego_extra);
+                else if (tipoJuego === 'memorice') montarMemorice(gameBox, item.juego_datos || "🧸|❤️|🌸|🍕|🎬|✨", item.juego_extra || "");
+                else if (tipoJuego === 'wordle') montarWordle(gameBox, item.juego_datos || "BESOS", item.juego_extra || "");
+                else if (tipoJuego === 'ruleta') montarRuleta(gameBox, item.juego_datos || "Cena rica|Película|Paseo|Postre");
+                else if (tipoJuego === 'puzzle') montarPuzzle(gameBox, imagenUrl || "dia1.jpg");
+                else if (tipoJuego === 'test') montarTest(gameBox, item.juego_datos || "", item.juego_extra || "");
+                else gameBox.style.display = 'none';
+            }
+
+            const songEl = document.getElementById('modal-song');
+            const cancionUrl = item.cancion ? item.cancion.trim() : "";
+            if (cancionUrl) {
+                songEl.href = cancionUrl;
+                songEl.style.display = 'inline-block';
+            } else {
+                songEl.style.display = 'none';
+            }
+
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function enviarCapsulaWhatsApp() {
+            const texto = document.getElementById('capsule-input').value.trim();
+            if (!texto) {
+                alert("Escribe primero unas palabritas en tu cápsula del tiempo ❤️");
+                return;
+            }
+            const url = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+
+        function descargarDiploma() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 900;
+            canvas.height = 1320;
+            const ctx = canvas.getContext('2d');
+
+            const grad = ctx.createLinearGradient(0, 0, 900, 1320);
+            grad.addColorStop(0, '#fff0f3');
+            grad.addColorStop(0.5, '#ffe5ec');
+            grad.addColorStop(1, '#ffccd5');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 900, 1320);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.roundRect(55, 55, 790, 1210, 32);
+            ctx.fill();
+
+            ctx.strokeStyle = '#ff758f';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.roundRect(77, 77, 746, 1166, 24);
+            ctx.stroke();
+
+            ctx.fillStyle = '#c9184a';
+            ctx.beginPath();
+            ctx.arc(450, 150, 38, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.font = '34px Segoe UI';
+            ctx.textAlign = 'center';
+            ctx.fillText('❤️', 450, 162);
+
+            ctx.fillStyle = '#c9184a';
+            ctx.font = 'bold 68px "Dancing Script", cursive';
+            ctx.fillText('Noviembre Contigo', 450, 255);
+
+            ctx.strokeStyle = '#ffb3c1';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(220, 285);
+            ctx.lineTo(680, 285);
+            ctx.stroke();
+
+            function dibujarParrafoAjustado(texto, x, yInicial, maxAncho, altoLinea) {
+                const palabras = texto.split(' ');
+                let linea = '';
+                let y = yInicial;
+
+                for (let n = 0; n < palabras.length; n++) {
+                    const prueba = linea + palabras[n] + ' ';
+                    if (ctx.measureText(prueba).width > maxAncho && n > 0) {
+                        ctx.fillText(linea.trim(), x, y);
+                        linea = palabras[n] + ' ';
+                        y += altoLinea;
+                    } else {
+                        linea = prueba;
+                    }
+                }
+                ctx.fillText(linea.trim(), x, y);
+                return y;
+            }
+
+            ctx.fillStyle = '#4a3b3b';
+            ctx.font = '24px "Segoe UI", sans-serif';
+            const dedicatoria = "Gracias por abrir estos sobres, espero te haya gustado y haberte sacado alguna sonrisa. Todo esto lo hago por el amor que siento por ti y las ganas de volver a reencontrarnos y crear algo mucho mejor de lo que tuvimos, hemos pasado por mucho y somos personas diferentes, más grandes, más maduras y con más herramientas para entendernos y llevarnos mejor. Me gustaría mucho apoyarte, cuidarte y poder verte lograr todos tus proyectos y pegarnos algún viajecito weno weno jaja te extraño chiquitita ojala vernos pronto, no te arrepentirás ❤️";
+
+            const finTextoY = dibujarParrafoAjustado(dedicatoria, 450, 345, 650, 38);
+
+            const cargarImagen = (src) => new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+
+            Promise.all([
+                cargarImagen('sello_pillillos.jpg'),
+                cargarImagen('sello_fuego.jpg')
+            ]).then(([imgPillillos, imgFuego]) => {
+                const selloY = Math.max(finTextoY + 45, 860);
+                const tamanoSello = 165;
+
+                const dibujarSelloCircular = (img, cx, cy, radio) => {
+                    if (!img) return;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radio, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.clip();
+                    ctx.drawImage(img, cx - radio, cy - radio, radio * 2, radio * 2);
+                    ctx.restore();
+                };
+
+                dibujarSelloCircular(imgPillillos, 280, selloY + tamanoSello / 2, tamanoSello / 2);
+                dibujarSelloCircular(imgFuego, 620, selloY + tamanoSello / 2, tamanoSello / 2);
+
+                ctx.fillStyle = '#c9184a';
+                ctx.font = 'bold 34px "Dancing Script", cursive';
+                ctx.fillText('30 de Noviembre • Con todo mi amor', 450, 1145);
+
+                ctx.fillStyle = '#8c7272';
+                ctx.font = '19px "Segoe UI", sans-serif';
+                ctx.fillText('Para ti, día a día ❤️', 450, 1190);
+
+                const link = document.createElement('a');
+                link.download = 'Certificado_Noviembre_Contigo.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                lanzarCorazones();
+            });
+        }
+
+        function montarRaspa(container, textoPremio) {
+            container.innerHTML = `<div class="scratch-container"><div class="scratch-secret">${textoPremio.trim()}</div><canvas id="scratch-canvas" width="280" height="110"></canvas></div>`;
+            const canvas = document.getElementById('scratch-canvas');
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 280, 110);
+            grad.addColorStop(0, '#ff8fa3');
+            grad.addColorStop(1, '#ffb3c1');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 280, 110);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px Segoe UI';
+            ctx.textAlign = 'center';
+            ctx.fillText('✨ Raspa aquí con tu dedo ✨', 140, 60);
+
+            let raspando = false;
+            const raspar = (x, y) => { ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fill(); };
+            canvas.onmousedown = () => raspando = true;
+            canvas.onmouseup = () => raspando = false;
+            canvas.onmousemove = (e) => { if (raspando) { const r = canvas.getBoundingClientRect(); raspar(e.clientX - r.left, e.clientY - r.top); } };
+            canvas.ontouchstart = (e) => { raspando = true; e.preventDefault(); };
+            canvas.ontouchend = () => raspando = false;
+            canvas.ontouchmove = (e) => { if (raspando) { e.preventDefault(); const r = canvas.getBoundingClientRect(); raspar(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); } };
+        }
+
+        function montarTrivia(container, pregunta, extra) {
+            const partes = (extra || "").split('::');
+            const opciones = (partes[0] || "").split('|').map(o => o.trim()).filter(Boolean);
+            const correcta = (partes[1] || "").trim().toLowerCase();
+            const mensajeSecreto = (partes[2] || "").trim();
+
+            container.innerHTML = `<p class="quiz-question">${(pregunta || "").trim()}</p><div class="quiz-options" id="trivia-opts"></div><div class="game-feedback" id="trivia-fb"></div>`;
+            const optsEl = document.getElementById('trivia-opts');
+            const fbEl = document.getElementById('trivia-fb');
+
+            opciones.forEach(op => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-btn';
+                btn.innerText = op;
+                btn.onclick = () => {
+                    if (op.toLowerCase() === correcta) {
+                        btn.classList.add('correct');
+                        fbEl.innerText = "¡Ese mismo! Dedicatoria desbloqueada ❤️";
+                        lanzarCorazones();
+                        revelarMensajeSecreto(mensajeSecreto);
+                    } else {
+                        btn.classList.add('wrong');
+                        fbEl.innerText = "¡Casi! Prueba con otra opción 🙈";
+                    }
+                };
+                optsEl.appendChild(btn);
+            });
+        }
+
+        function montarMemorice(container, emojisStr, mensajeSecreto) {
+            const base = emojisStr.split('|').map(e => e.trim()).filter(Boolean).slice(0, 6);
+            const cartas = [...base, ...base].sort(() => Math.random() - 0.5);
+            container.innerHTML = `<p class="quiz-question">Encuentra las ${base.length} parejas 💕</p><div class="memory-grid" id="mem-grid"></div><div class="game-feedback" id="mem-fb"></div>`;
+            const gridEl = document.getElementById('mem-grid');
+            const fbEl = document.getElementById('mem-fb');
+            let abiertas = [], parejas = 0, bloqueo = false;
+
+            cartas.forEach(emoji => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.innerText = '?';
+                card.onclick = () => {
+                    if (bloqueo || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+                    card.classList.add('flipped');
+                    card.innerText = emoji;
+                    abiertas.push({ card, emoji });
+                    if (abiertas.length === 2) {
+                        bloqueo = true;
+                        const [c1, c2] = abiertas;
+                        if (c1.emoji === c2.emoji) {
+                            c1.card.classList.add('matched'); c2.card.classList.add('matched');
+                            parejas++; abiertas = []; bloqueo = false;
+                            if (parejas === base.length) {
+                                fbEl.innerText = "¡Lo lograste! Dedicatoria desbloqueada 🎉❤️";
+                                lanzarCorazones();
+                                const respaldo = "Me encanta cómo podemos hablar de cualquier cosa durante horas o simplemente estar en silencio y sentirme en casa. Contigo todo fluye de la forma más bonita ❤️";
+                                revelarMensajeSecreto(mensajeSecreto || respaldo);
+                            }
+                        } else {
+                            setTimeout(() => { c1.card.classList.remove('flipped'); c2.card.classList.remove('flipped'); c1.card.innerText = '?'; c2.card.innerText = '?'; abiertas = []; bloqueo = false; }, 750);
+                        }
+                    }
+                };
+                gridEl.appendChild(card);
+            });
+        }
+
+        function montarWordle(container, palabraRaw, extraStr) {
+            const secreta = palabraRaw.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const largo = secreta.length;
+            const partesExtra = (extraStr || "").split('::');
+            const pista = (partesExtra[0] || "").trim();
+            const mensajeSecreto = (partesExtra[1] || "").trim();
+            let intentos = 0;
+
+            container.innerHTML = `<p class="quiz-question">Adivina la palabra (${largo} letras)</p>${pista ? `<p style="font-size:0.85rem;color:#7a5c5c;margin:-6px 0 10px 0;">${pista}</p>` : ''}<div class="wordle-board" id="w-board"></div><div class="wordle-input-row" id="w-controls"><input type="text" id="w-input" class="wordle-input" maxlength="${largo}" placeholder="${largo} letras"><button class="mini-action-btn" id="w-btn">Probar</button></div><div class="game-feedback" id="w-fb"></div>`;
+            const board = document.getElementById('w-board'), input = document.getElementById('w-input'), btn = document.getElementById('w-btn'), fb = document.getElementById('w-fb');
+
+            btn.onclick = () => {
+                const intento = input.value.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                if (intento.length !== largo) { fb.innerText = `Escribe una palabra de ${largo} letras.`; return; }
+                fb.innerText = ''; intentos++;
+                const row = document.createElement('div'); row.className = 'wordle-row';
+                for (let i = 0; i < largo; i++) {
+                    const cell = document.createElement('div'); cell.className = 'wordle-cell'; cell.innerText = intento[i];
+                    if (intento[i] === secreta[i]) cell.classList.add('correct');
+                    else if (secreta.includes(intento[i])) cell.classList.add('present');
+                    else cell.classList.add('absent');
+                    row.appendChild(cell);
+                }
+                board.appendChild(row); input.value = '';
+                if (intento === secreta) {
+                    fb.innerText = `¡Adivinaste! La palabra era ${secreta} ❤️🎉`;
+                    document.getElementById('w-controls').style.display = 'none';
+                    lanzarCorazones();
+                    revelarMensajeSecreto(mensajeSecreto);
+                } else if (intentos >= 5) {
+                    fb.innerText = `¡Casi! La palabra secreta era ${secreta} ❤️`;
+                    document.getElementById('w-controls').style.display = 'none';
+                    revelarMensajeSecreto(mensajeSecreto);
+                }
+            };
+        }
+
+        function montarRuleta(container, opcionesStr) {
+            const opciones = opcionesStr.split('|').map(o => o.trim()).filter(Boolean);
+            container.innerHTML = `<div class="wheel-wrapper"><div class="wheel-pointer">🔻</div><canvas id="wheel-canvas" width="240" height="240"></canvas></div><button class="mini-action-btn" id="spin-btn">🎡 Girar ruleta</button><div class="game-feedback" id="wheel-fb"></div>`;
+            const canvas = document.getElementById('wheel-canvas'), ctx = canvas.getContext('2d');
+            const colores = ['#ff758f', '#ffccd5', '#ff8fa3', '#ffe5ec', '#ffb3c1', '#ffc2d1'];
+            const arc = (2 * Math.PI) / opciones.length;
+
+            opciones.forEach((op, i) => {
+                const angle = i * arc;
+                ctx.beginPath(); ctx.fillStyle = colores[i % colores.length]; ctx.moveTo(120, 120); ctx.arc(120, 120, 118, angle, angle + arc); ctx.fill();
+                ctx.save(); ctx.translate(120, 120); ctx.rotate(angle + arc / 2); ctx.fillStyle = '#4a3b3b'; ctx.font = 'bold 11px Segoe UI'; ctx.textAlign = 'right'; ctx.fillText(op.substring(0, 18), 108, 4); ctx.restore();
+            });
+
+            let rotacionActual = 0;
+            const spinBtn = document.getElementById('spin-btn'), fb = document.getElementById('wheel-fb');
+            spinBtn.onclick = () => {
+                spinBtn.disabled = true; rotacionActual += 1440 + Math.floor(Math.random() * 360);
+                canvas.style.transform = `rotate(${rotacionActual}deg)`;
+                setTimeout(() => {
+                    const deg = (360 - ((rotacionActual + 90) % 360)) % 360;
+                    const idx = Math.floor(deg / (360 / opciones.length)) % opciones.length;
+                    fb.innerText = `¡Tocó: ${opciones[idx]}! 🎉❤️`; lanzarCorazones(); spinBtn.disabled = false;
+                }, 3600);
+            };
+        }
+
+        function montarPuzzle(container, imgUrl) {
+            container.innerHTML = `<p class="quiz-question">Toca las piezas junto al espacio vacío para armar la foto 🧩</p><div class="puzzle-grid" id="pz-grid"></div><div class="game-feedback" id="pz-fb"></div>`;
+            const gridEl = document.getElementById('pz-grid'), fbEl = document.getElementById('pz-fb');
+            let estado = [0, 1, 2, 3, 4, 5, 6, 8, 7];
+            for (let k = 0; k < 25; k++) {
+                const vacio = estado.indexOf(8);
+                const vecinos = [vacio - 3, vacio + 3, vacio % 3 !== 0 ? vacio - 1 : -1, vacio % 3 !== 2 ? vacio + 1 : -1].filter(n => n >= 0 && n < 9);
+                const elegido = vecinos[Math.floor(Math.random() * vecinos.length)];
+                [estado[vacio], estado[elegido]] = [estado[elegido], estado[vacio]];
+            }
+            function dibujar() {
+                gridEl.innerHTML = '';
+                estado.forEach((pieza, pos) => {
+                    const tile = document.createElement('div'); tile.className = 'puzzle-tile';
+                    if (pieza === 8) tile.classList.add('empty');
+                    else {
+                        tile.style.backgroundImage = `url('${imgUrl}')`;
+                        tile.style.backgroundPosition = `-${(pieza % 3) * 84}px -${Math.floor(pieza / 3) * 84}px`;
+                        tile.onclick = () => {
+                            const vacio = estado.indexOf(8);
+                            const esAdyacente = (Math.abs(pos - vacio) === 1 && Math.floor(pos / 3) === Math.floor(vacio / 3)) || Math.abs(pos - vacio) === 3;
+                            if (esAdyacente) {
+                                [estado[pos], estado[vacio]] = [estado[vacio], estado[pos]]; dibujar();
+                                if (estado.every((v, i) => v === i)) { fbEl.innerText = "¡Armaste la foto completa! ❤️🎉"; lanzarCorazones(); }
+                            }
+                        };
+                    }
+                    gridEl.appendChild(tile);
+                });
+            }
+            dibujar();
+        }
+
+        function montarTest(container, datosStr, mensajeSecreto) {
+            const bloques = datosStr.split('||').map(b => b.trim()).filter(Boolean);
+            let paso = 0, aciertos = 0;
+            function renderPregunta() {
+                if (paso >= bloques.length) {
+                    container.innerHTML = `<p class="quiz-question">¡Test completado! 🎉</p><p style="font-weight:bold;color:var(--accent);font-size:1.05rem;">Acertaste ${aciertos} de ${bloques.length} preguntas ❤️</p>`;
+                    lanzarCorazones();
+                    revelarMensajeSecreto(mensajeSecreto);
+                    return;
+                }
+                const [preg, optsRaw, corr] = bloques[paso].split('::');
+                const opts = (optsRaw || "").split('|').map(o => o.trim()).filter(Boolean);
+                container.innerHTML = `<p class="quiz-question">Pregunta ${paso + 1} de ${bloques.length}: ${preg.trim()}</p><div class="quiz-options" id="test-opts"></div>`;
+                const optsEl = document.getElementById('test-opts');
+                opts.forEach(op => {
+                    const btn = document.createElement('button'); btn.className = 'quiz-btn'; btn.innerText = op;
+                    btn.onclick = () => {
+                        if (op.toLowerCase() === (corr || "").trim().toLowerCase()) { btn.classList.add('correct'); aciertos++; }
+                        else btn.classList.add('wrong');
+                        setTimeout(() => { paso++; renderPregunta(); }, 650);
+                    };
+                    optsEl.appendChild(btn);
+                });
+            }
+            renderPregunta();
+        }
+
+        function seleccionarReaccion(boton, etiqueta) {
+            document.querySelectorAll('.reaction-chip').forEach(c => c.classList.remove('selected'));
+            boton.classList.add('selected');
+            if (diaActualAbierto) {
+                reaccionesGuardadas[String(diaActualAbierto.dia)] = etiqueta;
+                localStorage.setItem('reacciones_preview', JSON.stringify(reaccionesGuardadas));
+            }
+            lanzarCorazones();
+            mostrarInvitacionPersonal(etiqueta);
+        }
+
+        function mostrarInvitacionPersonal(etiqueta) {
+            const promptEl = document.getElementById('personal-note-prompt');
+            promptEl.innerHTML = `Elegiste <b>${etiqueta}</b> ❤️<br>Si te gustó este detalle, mándame un mensajito o una nota de voz contándome qué te pareció con tus propias palabras.`;
+            promptEl.style.display = 'block';
+        }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        window.onclick = function(event) { if (event.target === document.getElementById('modal')) closeModal(); }
+
+        cargarDesdeGoogleSheets();
+    </script>
+</body>
+</html>
